@@ -19,7 +19,7 @@ jobs:
           shortcuts sign unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut --output signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut
 
       - name: Upload signed shortcut
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs.shortcut_name }}-signed
           path: signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut
