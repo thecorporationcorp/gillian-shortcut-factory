@@ -1,0 +1,28 @@
+name: Sign iOS Shortcut
+on:
+  workflow_dispatch:
+    inputs:
+      shortcut_name:
+        description: "Shortcut name (without .shortcut extension)"
+        required: true
+
+jobs:
+  sign:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Verify Shortcuts CLI
+        run: shortcuts version
+      
+      - name: Sign shortcut
+        run: |
+          mkdir -p signed_shortcuts
+          shortcuts sign -i unsigned_shortcuts/${{ inputs.shortcut_name }}.shortcut -o signed_shortcuts/${{ inputs.shortcut_name }}_signed.shortcut -m people-who-know-me
+      
+      - name: Upload signed shortcut
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.shortcut_name }}_signed
+          path: signed_shortcuts/${{ inputs.shortcut_name }}_signed.shortcut
