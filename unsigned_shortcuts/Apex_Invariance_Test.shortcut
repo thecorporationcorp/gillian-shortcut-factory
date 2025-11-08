@@ -1,0 +1,25 @@
+{
+  "WFWorkflowClientRelease": "2.0",
+  "WFWorkflowActions": [
+    {
+      "WFActionIdentifier": "is.workflow.actions.ask",
+      "WFActionParameters": {
+        "WFInputType": "Text",
+        "WFPrompt": "Enter a test string for logging:"
+      }
+    },
+    {
+      "WFActionIdentifier": "is.workflow.actions.comment",
+      "WFActionParameters": {
+        "WFCommentActionText": "Testing: Logic flow and iteration coverage"
+      }
+    },
+    {
+      "WFActionIdentifier": "is.workflow.actions.showresult",
+      "WFActionParameters": {
+        "WFText": "Builder output complete. Check determinism."
+      }
+    }
+  ],
+  "WFWorkflowName": "Apex_Invariance_Test"
+}
