@@ -1,4 +1,4 @@
-name: Sign iOS Shortcut
+name: Upload iCloud Shortcut
 
 on:
   workflow_dispatch:
@@ -8,21 +8,28 @@ on:
         required: true
 
 jobs:
-  sign:
+  upload:
     runs-on: macos-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: "Mock sign Shortcut"
+      - name: Install Shortcuts CLI
+        run: |
+          brew install --cask shortcuts
+
+      - name: Upload to iCloud
         run: |
           mkdir -p signed_shortcuts
-          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" \
-             "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut"
+          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut"
+          echo "⚙️ Uploading to iCloud..."
+          shortcuts share -i "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut" > share_link.txt
+          echo "✅ iCloud share link created:"
+          cat share_link.txt
 
-      - name: Upload signed shortcut
+      - name: Upload share link artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.shortcut_name }}-signed
-          path: signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut
+          name: iCloud_Share_Link
+          path: share_link.txt
