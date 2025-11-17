@@ -21,10 +21,10 @@ jobs:
 
       - name: Upload to iCloud
         run: |
-          mkdir -p signed_shortcuts
-          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut"
+          mkdir -p uploaded_shortcuts
+          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "uploaded_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
           echo "⚙️ Uploading to iCloud..."
-          shortcuts share -i "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut" > share_link.txt
+          shortcuts share -i "uploaded_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" > share_link.txt
           echo "✅ iCloud share link created:"
           cat share_link.txt
 
