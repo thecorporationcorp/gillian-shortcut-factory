@@ -80,26 +80,27 @@
         <p>Click the button below to install this shortcut on your iPhone, iPad, or Mac</p>
 
         <button id="installBtn" class="install-btn" onclick="installShortcut()">
-            📥 Install Shortcut
+            📥 Download Shortcut
         </button>
 
         <div class="instructions">
             <h3>📱 Installation Instructions:</h3>
             <ol>
-                <li>Click the "Install Shortcut" button above</li>
-                <li>Your Shortcuts app will open</li>
-                <li>Review the shortcut actions</li>
-                <li>Tap "Add Shortcut" to install</li>
+                <li>Tap "Download Shortcut" above</li>
+                <li>File downloads to your device</li>
+                <li>Open Files app → Downloads folder</li>
+                <li>Tap the downloaded .shortcut file</li>
+                <li>Tap "Add Shortcut" when prompted</li>
             </ol>
         </div>
 
         <div class="note">
-            <strong>⚠️ Important:</strong> This button only works on iOS/iPadOS/macOS devices with the Shortcuts app installed. If you're on a different device, open this page on your iPhone, iPad, or Mac.
+            <strong>⚠️ Note:</strong> On iOS, shortcuts downloaded from the web require you to open them from the Files app. This is an Apple security restriction that cannot be bypassed.
         </div>
 
         <p style="margin-top: 30px; color: #999; font-size: 14px;">
             Powered by Gillian Shortcut Factory<br>
-            No Mac required • No iCloud account needed • Works on all iOS devices
+            No Mac required • Works on all iOS devices
         </p>
     </div>
 
@@ -109,7 +110,7 @@
 
         async function installShortcut() {
             const btn = document.getElementById('installBtn');
-            btn.textContent = '⏳ Loading...';
+            btn.textContent = '⏳ Downloading...';
             btn.disabled = true;
 
             try {
@@ -117,31 +118,37 @@
                 const response = await fetch(shortcutUrl);
                 if (!response.ok) throw new Error('Failed to fetch shortcut');
 
-                // Get the file as a blob with correct MIME type
+                // Get the file as a blob
                 const blob = await response.blob();
-                const properBlob = new Blob([blob], { type: 'application/octet-stream' });
 
-                // Create a blob URL
-                const blobUrl = URL.createObjectURL(properBlob);
+                // Create download link
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${shortcutName}.shortcut`;
+                link.style.display = 'none';
 
-                // Encode the blob URL for the shortcuts scheme
-                const encodedBlobUrl = encodeURIComponent(blobUrl);
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
 
-                // Trigger the shortcuts app with the blob URL
-                window.location.href = `shortcuts://import-shortcut?url=${encodedBlobUrl}&name=${encodeURIComponent(shortcutName)}`;
-
-                // Clean up after a delay
+                // Clean up
                 setTimeout(() => {
-                    URL.revokeObjectURL(blobUrl);
-                    btn.textContent = '📥 Install Shortcut';
-                    btn.disabled = false;
-                }, 5000);
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                }, 100);
+
+                btn.textContent = '✅ Downloaded!';
+                btn.disabled = false;
+
+                setTimeout(() => {
+                    btn.textContent = '📥 Download Shortcut';
+                }, 3000);
 
             } catch (error) {
                 console.error('Error:', error);
                 btn.textContent = '❌ Error - Try Again';
                 btn.disabled = false;
-                alert('Failed to load shortcut. Please try again.');
+                alert('Failed to download shortcut. Please try again.');
             }
         }
     </script>
