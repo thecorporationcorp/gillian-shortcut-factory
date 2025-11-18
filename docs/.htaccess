@@ -1,0 +1,9 @@
+# Set correct MIME type for .shortcut files
+AddType application/octet-stream .shortcut
+AddType application/x-apple-shortcut .shortcut
+
+# Allow downloads
+<FilesMatch "\.shortcut$">
+    Header set Content-Disposition "attachment"
+    Header set Content-Type "application/octet-stream"
+</FilesMatch>
