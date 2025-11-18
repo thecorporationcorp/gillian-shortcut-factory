@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Prepare shortcut for distribution
         run: |
@@ -34,17 +36,21 @@ jobs:
           body: |
             ## 📱 ${{ github.event.inputs.shortcut_name }} Shortcut
 
-            **How to install:**
-            1. Download the `.shortcut` file below on your iPhone, iPad, or Mac
-            2. Open the downloaded file
-            3. Tap/Click "Add Shortcut" when prompted
+            **IMPORTANT: Direct .shortcut downloads won't work due to iOS security!**
 
-            **Direct download link:**
-            Click the asset below to download.
+            **✅ WORKING Installation Method:**
+            Open this link on your iPhone/iPad/Mac:
+            **https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/shortcuts/${{ github.event.inputs.shortcut_name }}.html**
+
+            This page uses the Shortcuts URL scheme to bypass iOS restrictions.
+
+            ~~Direct download (doesn't work on iOS):~~
+            The .shortcut file is attached below but won't import directly on iOS.
           draft: false
           prerelease: false
 
       - name: Upload Release Asset
+        id: upload_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,10 +60,40 @@ jobs:
           asset_name: ${{ github.event.inputs.shortcut_name }}.shortcut
           asset_content_type: application/octet-stream
 
-      - name: Output download link
+      - name: Generate installation page
         run: |
+          # Get the asset download URL
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/shortcut-${{ github.event.inputs.shortcut_name }}-${{ github.run_number }}/${{ github.event.inputs.shortcut_name }}.shortcut"
+
+          # URL encode the asset URL for the shortcuts:// scheme
+          ENCODED_URL=$(echo "$ASSET_URL" | jq -sRr @uri)
+
+          # Create docs/shortcuts directory for GitHub Pages
+          mkdir -p docs/shortcuts
+
+          # Generate HTML from template
+          sed -e "s|{{SHORTCUT_NAME}}|${{ github.event.inputs.shortcut_name }}|g" \
+              -e "s|{{SHORTCUT_URL}}|$ENCODED_URL|g" \
+              .github/shortcut-template.html > "docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
+
+          echo "✅ Installation page created at docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
+
+      - name: Commit installation page to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/shortcuts/
+          git commit -m "Add installation page for ${{ github.event.inputs.shortcut_name }}" || echo "No changes to commit"
+          git push origin ${{ github.ref_name }}
+
+      - name: Output installation link
+        run: |
+          INSTALL_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
           echo "🎉 SUCCESS! Your shortcut is published!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📥 **Download link:** ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "📱 **INSTALLATION LINK (use this!):**" >> $GITHUB_STEP_SUMMARY
+          echo "$INSTALL_URL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Share this link with anyone who wants to install the shortcut!" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Open this link on your iPhone/iPad/Mac to install the shortcut." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Release page: ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY

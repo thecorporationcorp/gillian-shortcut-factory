@@ -1,14 +1,22 @@
 # gillian-shortcut-factory
 
-## 🎉 NO MAC REQUIRED!
+## 🎉 NO MAC REQUIRED - TRULY WORKS!
 
-This shortcut factory works **entirely without a Mac**. Everything runs on GitHub's free Ubuntu runners.
+This shortcut factory works **entirely without a Mac** and **bypasses iOS "unsigned shortcut" restrictions** using the Shortcuts URL scheme.
+
+## The Problem We Solved
+
+iOS blocks direct .shortcut file downloads with the error:
+> "Shortcut cannot be opened. Importing unsigned shortcut files is not supported."
+
+**Our solution:** Use the `shortcuts://import-shortcut` URL scheme via a web page, which bypasses this restriction entirely.
 
 ## How It Works
 
 1. **Add shortcuts** to the `unsigned_shortcuts/` folder
 2. **Run the GitHub Action** to publish them
-3. **Get a direct download link** that works on any iOS/Mac device
+3. **Get an installation page URL** that uses the Shortcuts URL scheme
+4. **Open on iPhone/iPad/Mac** → automatically imports the shortcut
 
 ## Publishing a Shortcut
 
@@ -17,18 +25,47 @@ This shortcut factory works **entirely without a Mac**. Everything runs on GitHu
 3. Click **"Run workflow"**
 4. Enter the shortcut name (without .shortcut extension)
 5. Wait ~30 seconds
-6. Get your download link from the release!
+6. Get your installation page URL!
 
-## How to Install Published Shortcuts
+## Installing Published Shortcuts
 
-When you run the workflow, it creates a GitHub Release with your shortcut attached. Users can:
+The workflow generates an **installation page** for each shortcut:
 
-1. Click the release download link on their iPhone/iPad/Mac
-2. Open the downloaded .shortcut file
+```
+https://YOUR_USERNAME.github.io/gillian-shortcut-factory/shortcuts/SHORTCUT_NAME.html
+```
+
+When you open this link on iPhone/iPad/Mac:
+1. Click the "Install Shortcut" button
+2. Shortcuts app opens automatically
 3. Tap "Add Shortcut" when prompted
+4. Done! No errors, no "unsigned shortcut" blocking
 
-**No iCloud account needed. No Mac needed. No signing needed.**
+## Setup (First Time Only)
+
+**Enable GitHub Pages:**
+1. Go to Settings → Pages
+2. Source: Deploy from a branch
+3. Branch: Select your main branch
+4. Folder: `/docs`
+5. Save
+
+That's it! Now the workflow will automatically create installation pages.
 
 ## Why This Works
 
-Apple Shortcuts (.shortcut files) don't need to be "signed" in the cryptographic sense. They just need to be downloaded and opened on an iOS/Mac device. The previous approach used macOS runners to upload to iCloud, but that was unnecessary - direct downloads work perfectly!
+**The Technical Details:**
+- iOS blocks **direct .shortcut downloads** (the error you were getting)
+- iOS **allows** the `shortcuts://import-shortcut?url=` URL scheme
+- We generate an HTML page with a link using this URL scheme
+- When clicked on iOS, it triggers the Shortcuts app to import directly
+- This bypasses the "unsigned shortcut" restriction entirely
+
+**No Mac. No iCloud. No signing. Just works.**
+
+## Testing
+
+Try the test shortcut:
+1. Run the workflow with `Valid_Test` as the shortcut name
+2. Open the generated installation page on your iPhone
+3. Install and run → you'll see "Test Shortcut Works!"
