@@ -68,15 +68,12 @@ jobs:
           # Copy shortcut file to docs for direct serving from GitHub Pages
           cp "published_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "docs/shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
 
-          # Get the GitHub Pages URL for the shortcut file
+          # Get the GitHub Pages URL for the shortcut file (JavaScript will handle encoding)
           PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
-
-          # URL encode the GitHub Pages URL for the shortcuts:// scheme (using printf to avoid trailing newline)
-          ENCODED_URL=$(printf '%s' "$PAGES_URL" | jq -sRr @uri)
 
           # Generate HTML from template
           sed -e "s|{{SHORTCUT_NAME}}|${{ github.event.inputs.shortcut_name }}|g" \
-              -e "s|{{SHORTCUT_URL}}|$ENCODED_URL|g" \
+              -e "s|{{SHORTCUT_URL}}|$PAGES_URL|g" \
               .github/shortcut-template.html > "docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
 
           echo "✅ Installation page created at docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
