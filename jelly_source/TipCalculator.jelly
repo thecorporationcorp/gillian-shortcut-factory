@@ -1,0 +1,30 @@
+// Tip Calculator Shortcut
+// Calculates tip and total bill amount
+
+// Ask for the bill amount
+importQuestion("Enter bill amount:", billAmount)
+
+// Ask for tip percentage
+menu {
+    case "15%":
+        calculate(billAmount * 0.15, tipAmount)
+    case "18%":
+        calculate(billAmount * 0.18, tipAmount)
+    case "20%":
+        calculate(billAmount * 0.20, tipAmount)
+    case "25%":
+        calculate(billAmount * 0.25, tipAmount)
+    case "Custom":
+        importQuestion("Enter tip percentage:", customPercent)
+        calculate(billAmount * (customPercent / 100), tipAmount)
+}
+
+// Calculate total
+calculate(billAmount + tipAmount, totalAmount)
+
+// Round the amounts
+roundNumber(tipAmount, mode: "normal", roundedTip)
+roundNumber(totalAmount, mode: "normal", roundedTotal)
+
+// Show the result
+showResult("Bill: $\(billAmount)\nTip: $\(roundedTip)\nTotal: $\(roundedTotal)")
