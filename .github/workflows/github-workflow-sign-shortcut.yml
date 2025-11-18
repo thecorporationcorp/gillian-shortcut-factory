@@ -1,4 +1,4 @@
-name: Upload iCloud Shortcut
+name: Publish Shortcut
 
 on:
   workflow_dispatch:
@@ -8,28 +8,56 @@ on:
         required: true
 
 jobs:
-  upload:
-    runs-on: macos-latest
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Shortcuts CLI
+      - name: Prepare shortcut for distribution
         run: |
-          brew install --cask shortcuts
+          mkdir -p published_shortcuts
+          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "published_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
+          echo "✅ Shortcut prepared: ${{ github.event.inputs.shortcut_name }}.shortcut"
 
-      - name: Upload to iCloud
-        run: |
-          mkdir -p signed_shortcuts
-          cp "unsigned_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut"
-          echo "⚙️ Uploading to iCloud..."
-          shortcuts share -i "signed_shortcuts/${{ github.event.inputs.shortcut_name }}-signed.shortcut" > share_link.txt
-          echo "✅ iCloud share link created:"
-          cat share_link.txt
-
-      - name: Upload share link artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: iCloud_Share_Link
-          path: share_link.txt
+          tag_name: shortcut-${{ github.event.inputs.shortcut_name }}-${{ github.run_number }}
+          release_name: ${{ github.event.inputs.shortcut_name }} Shortcut
+          body: |
+            ## 📱 ${{ github.event.inputs.shortcut_name }} Shortcut
+
+            **How to install:**
+            1. Download the `.shortcut` file below on your iPhone, iPad, or Mac
+            2. Open the downloaded file
+            3. Tap/Click "Add Shortcut" when prompted
+
+            **Direct download link:**
+            Click the asset below to download.
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./published_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut
+          asset_name: ${{ github.event.inputs.shortcut_name }}.shortcut
+          asset_content_type: application/octet-stream
+
+      - name: Output download link
+        run: |
+          echo "🎉 SUCCESS! Your shortcut is published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 **Download link:** ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Share this link with anyone who wants to install the shortcut!" >> $GITHUB_STEP_SUMMARY
