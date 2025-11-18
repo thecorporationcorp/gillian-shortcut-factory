@@ -1,0 +1,14 @@
+// Miles to Kilometers Converter
+// Simple unit conversion shortcut
+
+// Ask for miles
+importQuestion("Enter miles:", miles)
+
+// Convert to kilometers (1 mile = 1.60934 km)
+calculate(miles * 1.60934, kilometers)
+
+// Round to 2 decimal places
+roundNumber(kilometers, mode: "normal", rounded)
+
+// Show result
+showResult("\(miles) miles = \(rounded) kilometers")
