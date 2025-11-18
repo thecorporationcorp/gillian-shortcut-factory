@@ -1,0 +1,44 @@
+// Perplexity Voice Assistant
+// Ask a question, get an AI answer spoken back
+
+// Ask user for their question
+importQuestion("What do you want to ask Perplexity?", userQuestion)
+
+// Your Perplexity API key (replace with your actual key)
+text("pplx-YOUR_API_KEY_HERE", apiKey)
+
+// Build the JSON request
+dictionary {
+    "model": "sonar-small-online",
+    "messages": [
+        dictionary {
+            "role": "user",
+            "content": userQuestion
+        }
+    ]
+}
+setVariable(requestBody, "Request Body")
+
+// Call Perplexity API
+getContentsOfURL(
+    url: "https://api.perplexity.ai/chat/completions",
+    method: "POST",
+    headers: {
+        "Authorization": "Bearer \(apiKey)",
+        "Content-Type": "application/json"
+    },
+    requestBody: requestBody,
+    response
+)
+
+// Extract the answer
+getDictionaryValue(key: "choices", from: response, choices)
+getItemFromList(index: 1, from: choices, firstChoice)
+getDictionaryValue(key: "message", from: firstChoice, message)
+getDictionaryValue(key: "content", from: message, answer)
+
+// Speak the answer
+speak(answer)
+
+// Also show it
+showResult(answer)
