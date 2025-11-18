@@ -32,7 +32,8 @@
             color: white;
             padding: 15px 40px;
             border-radius: 12px;
-            text-decoration: none;
+            border: none;
+            cursor: pointer;
             font-size: 18px;
             font-weight: bold;
             margin: 20px 0;
@@ -41,6 +42,11 @@
         .install-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .install-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         .instructions {
             text-align: left;
@@ -73,9 +79,9 @@
         <h1>Valid_Test</h1>
         <p>Click the button below to install this shortcut on your iPhone, iPad, or Mac</p>
 
-        <a href="shortcuts://import-shortcut?url=https%3A%2F%2Fthecorporationcorp.github.io%2Fgillian-shortcut-factory%2Fshortcuts%2FValid_Test.shortcut&name=Valid_Test" class="install-btn">
+        <button id="installBtn" class="install-btn" onclick="installShortcut()">
             📥 Install Shortcut
-        </a>
+        </button>
 
         <div class="instructions">
             <h3>📱 Installation Instructions:</h3>
@@ -96,5 +102,48 @@
             No Mac required • No iCloud account needed • Works on all iOS devices
         </p>
     </div>
+
+    <script>
+        const shortcutName = 'Valid_Test';
+        const shortcutUrl = 'https://thecorporationcorp.github.io/gillian-shortcut-factory/shortcuts/Valid_Test.shortcut';
+
+        async function installShortcut() {
+            const btn = document.getElementById('installBtn');
+            btn.textContent = '⏳ Loading...';
+            btn.disabled = true;
+
+            try {
+                // Fetch the shortcut file
+                const response = await fetch(shortcutUrl);
+                if (!response.ok) throw new Error('Failed to fetch shortcut');
+
+                // Get the file as a blob with correct MIME type
+                const blob = await response.blob();
+                const properBlob = new Blob([blob], { type: 'application/octet-stream' });
+
+                // Create a blob URL
+                const blobUrl = URL.createObjectURL(properBlob);
+
+                // Encode the blob URL for the shortcuts scheme
+                const encodedBlobUrl = encodeURIComponent(blobUrl);
+
+                // Trigger the shortcuts app with the blob URL
+                window.location.href = `shortcuts://import-shortcut?url=${encodedBlobUrl}&name=${encodeURIComponent(shortcutName)}`;
+
+                // Clean up after a delay
+                setTimeout(() => {
+                    URL.revokeObjectURL(blobUrl);
+                    btn.textContent = '📥 Install Shortcut';
+                    btn.disabled = false;
+                }, 5000);
+
+            } catch (error) {
+                console.error('Error:', error);
+                btn.textContent = '❌ Error - Try Again';
+                btn.disabled = false;
+                alert('Failed to load shortcut. Please try again.');
+            }
+        }
+    </script>
 </body>
 </html>
