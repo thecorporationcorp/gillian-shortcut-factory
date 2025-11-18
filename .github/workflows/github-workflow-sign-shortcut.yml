@@ -62,14 +62,17 @@ jobs:
 
       - name: Generate installation page
         run: |
-          # Get the asset download URL
-          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/shortcut-${{ github.event.inputs.shortcut_name }}-${{ github.run_number }}/${{ github.event.inputs.shortcut_name }}.shortcut"
-
-          # URL encode the asset URL for the shortcuts:// scheme (using printf to avoid trailing newline)
-          ENCODED_URL=$(printf '%s' "$ASSET_URL" | jq -sRr @uri)
-
           # Create docs/shortcuts directory for GitHub Pages
           mkdir -p docs/shortcuts
+
+          # Copy shortcut file to docs for direct serving from GitHub Pages
+          cp "published_shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut" "docs/shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
+
+          # Get the GitHub Pages URL for the shortcut file
+          PAGES_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
+
+          # URL encode the GitHub Pages URL for the shortcuts:// scheme (using printf to avoid trailing newline)
+          ENCODED_URL=$(printf '%s' "$PAGES_URL" | jq -sRr @uri)
 
           # Generate HTML from template
           sed -e "s|{{SHORTCUT_NAME}}|${{ github.event.inputs.shortcut_name }}|g" \
@@ -77,6 +80,7 @@ jobs:
               .github/shortcut-template.html > "docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
 
           echo "✅ Installation page created at docs/shortcuts/${{ github.event.inputs.shortcut_name }}.html"
+          echo "✅ Shortcut file copied to docs/shortcuts/${{ github.event.inputs.shortcut_name }}.shortcut"
 
       - name: Commit installation page to gh-pages
         run: |
